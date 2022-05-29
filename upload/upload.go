@@ -41,7 +41,7 @@ func (pr *Progress) Print() {
 func Upload(r *http.Request) (string, error) {
 	start := time.Now()
 
-	file, fileHeader, err := r.FormFile("file")
+	file, fileHeader, err := r.FormFile("files")
 	if err != nil {
 		//http.Error(w, err.Error(), http.StatusBadRequest)
 		return "", err

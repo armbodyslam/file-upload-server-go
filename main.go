@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/armbodyslam/file-upload/upload"
+	"github.com/rs/cors"
 )
 
 const MAX_UPLOAD_SIZE = 1024 * 1024 // 1MB
@@ -52,6 +53,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("usage", usage)
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(res)
 }
 
@@ -74,7 +76,15 @@ func main() {
 	mux.HandleFunc("/up", upHandler)
 	mux.HandleFunc("/upload", uploadHandler)
 
-	if err := http.ListenAndServe(":4500", mux); err != nil {
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowCredentials: true,
+		// Enable Debugging for testing, consider disabling in production
+		Debug: true,
+	})
+
+	handler := c.Handler(mux)
+	if err := http.ListenAndServe(":4500", handler); err != nil {
 		log.Fatal(err)
 	}
 }
