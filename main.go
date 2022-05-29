@@ -13,11 +13,19 @@ import (
 const MAX_UPLOAD_SIZE = 1024 * 1024 // 1MB
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	setupResponse(&w, r)
+	w.Header().Set("Server", "A Go Web Server")
+	w.WriteHeader(200)
+	w.Write([]byte("Hello world"))
+}
+
+func upHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
 	http.ServeFile(w, r, "index.html")
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	setupResponse(&w, r)
 	start := time.Now()
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -47,12 +55,23 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
+// func enableCors(w *http.ResponseWriter) {
+// 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+// }
+
+func setupResponse(w *http.ResponseWriter, req *http.Request) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}
+
 func main() {
 
 	fmt.Println("File Upload Server starting...")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("/up", upHandler)
 	mux.HandleFunc("/upload", uploadHandler)
 
 	if err := http.ListenAndServe(":4500", mux); err != nil {
